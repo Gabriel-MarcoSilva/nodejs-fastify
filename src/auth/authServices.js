@@ -7,22 +7,22 @@ class AuthService {
         this.repository = repository
     }
 
-    register (name, email, password) {
+    async register (name, email, password) {
         
-        const userExists = this.repository.findByEmail(email)
+        const userExists = await this.repository.findByEmail(email)
         if (userExists) {
             throw new Error('This emai was already used by another user')
         }
 
         const newuser = new User({ name, email, password })
         newuser.password = bcrypt.hashSync(newuser.password, 10)
-        this.repository.save(newuser)
+        await this.repository.save(newuser)
         return newuser
     }
 
-    login (email, password) {
+    async login (email, password) {
 
-        const user = this.repository.findByEmail(email)
+        const user = await this.repository.findByEmail(email)
         if (!user) throw new Error('User not found') 
         
         const isSamePassword = bcrypt.compareSync(password, user.password)
@@ -34,9 +34,9 @@ class AuthService {
         return {token, user}
     }
 
-    verifyToken(token) {
+    async verifyToken(token) {
         const decodedToken = jwt.verify(token, "segredo")
-        const user = this.repository.findByEmail(decodedToken.email)
+        const user = await this.repository.findByEmail(decodedToken.email)
         return user
     }
 }
